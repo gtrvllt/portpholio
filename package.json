@@ -8,9 +8,11 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "db:types": "supabase gen types typescript --project-id elagvpphiuchhozrzojy --schema public > shared/types/database.types.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.117.2",
     "nuxt": "4.5.2",
     "vue": "3.5.43",
     "vue-router": "5.3.1"

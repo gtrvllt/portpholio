@@ -5,6 +5,13 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+  runtimeConfig: {
+    public: {
+      // Surchargées par NUXT_PUBLIC_SUPABASE_URL / NUXT_PUBLIC_SUPABASE_KEY
+      supabaseUrl: '',
+      supabaseKey: '',
+    },
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'fr' },
