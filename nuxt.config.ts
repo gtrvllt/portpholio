@@ -5,6 +5,10 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+  routeRules: {
+    // Admin rendue côté client uniquement : la session vit dans le navigateur.
+    '/admin': { ssr: false },
+  },
   runtimeConfig: {
     public: {
       // Surchargées par NUXT_PUBLIC_SUPABASE_URL / NUXT_PUBLIC_SUPABASE_KEY
