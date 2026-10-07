@@ -106,7 +106,9 @@ onMounted(() => {
 <style scoped>
 .detail {
   /* Largeur fixe = largeur de la grille : le contenu ne se recompose pas pendant l'animation d'ouverture. */
-  --max-h: calc(100dvh - 96px);
+  /* Photo en plein écran : toute la hauteur visible, moins une marge en haut et en bas. */
+  --edge: 16px;
+  --max-h: calc(100dvh - 2 * var(--edge));
   --info-w: 300px;
   --space: 32px;
 

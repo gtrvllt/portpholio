@@ -62,6 +62,9 @@ function observeDetail() {
   observer.observe(el)
 }
 
+// Marge entre le haut de l'écran et la photo ouverte (même valeur que --edge dans PhotoDetail).
+const EDGE = 16
+
 // smooth = ouverture depuis la grille ; sinon (lien direct, flèches) on arrive directement sur la photo.
 async function onExpandedChange(id: string | null, smooth: boolean) {
   await nextTick()
@@ -69,10 +72,7 @@ async function onExpandedChange(id: string | null, smooth: boolean) {
   const el = canvas.value?.$el
   if (!id || !el) return
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  window.scrollTo({
-    top: Math.max(0, expandedTop(el) - 16),
-    behavior: smooth && !reduceMotion ? 'smooth' : 'auto',
-  })
+  animateScrollTo(Math.max(0, expandedTop(el) - EDGE), smooth && !reduceMotion ? 450 : 0)
 }
 
 watch(() => layout.value.expandedId, (id, previous) => onExpandedChange(id, !previous))
@@ -136,12 +136,13 @@ onBeforeUnmount(() => observer?.disconnect())
   --xh-fallback: calc(100dvh + 80px);
   --block-top: calc(var(--hr) * var(--colw) + var(--hk) * var(--gap));
 
+  /* Hauteur sans transition : la page doit être assez haute dès le clic
+     pour que le défilement automatique atteigne la photo ouverte. */
   position: relative;
   height: calc(var(--hr) * var(--colw) + max(var(--hk) - 1, 0) * var(--gap));
   margin: 0;
   padding: 0;
   list-style: none;
-  transition: height var(--duration-slow) var(--ease);
 }
 
 .masonry__canvas--expanded {
