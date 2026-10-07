@@ -19,7 +19,8 @@ const background = computed(() => {
 const largest = computed(() => Math.max(...props.photo.sizes))
 const src = computed(() => photoUrl(props.photo.storage_key, largest.value))
 const srcSet = computed(() => srcset(props.photo.storage_key, props.photo.sizes))
-const sizes = computed(() => isPortrait.value ? '(max-width: 720px) 100vw, 60vh' : '100vw')
+// Largeur affichée approximative : portrait limité par la hauteur d'écran, paysage par la colonne d'infos.
+const sizes = computed(() => isPortrait.value ? '(max-width: 720px) 100vw, 66vh' : '(max-width: 720px) 100vw, 75vw')
 
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' })
 const takenAt = computed(() => props.photo.taken_at ? dateFormatter.format(new Date(props.photo.taken_at)) : null)
@@ -133,27 +134,26 @@ onMounted(() => {
   background-position: center;
 }
 
-.detail--landscape .detail__media {
-  --img-h: min(calc(100cqw * var(--ratio)), var(--max-h));
-}
-
-.detail--portrait {
+/* Photo à gauche, infos à droite (paysage comme portrait) :
+   la photo prend la plus grande taille qui tient en hauteur d'écran ET dans la largeur restante. */
+.detail {
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space);
   align-items: start;
 }
 
-.detail--portrait .detail__media {
+.detail__media {
   --img-h: min(var(--max-h), calc((100cqw - var(--info-w) - var(--space)) * var(--ratio)));
 }
 
+/* Écran étroit : infos sous la photo. */
 @container masonry (width < 720px) {
-  .detail--portrait {
+  .detail {
     grid-template-columns: 1fr;
     gap: 20px;
   }
 
-  .detail--portrait .detail__media {
+  .detail__media {
     --img-h: min(calc(100cqw * var(--ratio)), var(--max-h));
   }
 }
@@ -176,29 +176,6 @@ onMounted(() => {
   flex-direction: column;
   gap: 20px;
   animation: fade-up var(--duration-slow) var(--ease) 120ms both;
-}
-
-.detail--landscape .detail__info {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'head head'
-    'specs tags';
-  align-items: start;
-}
-
-.detail--landscape .detail__head {
-  grid-area: head;
-}
-
-.detail--landscape .detail__specs {
-  grid-area: specs;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-}
-
-.detail--landscape .detail__tags {
-  grid-area: tags;
-  justify-content: flex-end;
 }
 
 .detail__head {
