@@ -1,7 +1,6 @@
-import type { Tables, TablesUpdate } from '#shared/types/database.types'
+import type { TablesUpdate } from '#shared/types/database.types'
 
-export type Tag = Pick<Tables<'tags'>, 'id' | 'name' | 'slug'>
-export type AdminPhoto = Tables<'photos'> & { tags: Tag[] }
+export type AdminPhoto = PhotoWithTags
 
 export function useAdminPhotos() {
   const supabase = useSupabase()
@@ -14,7 +13,7 @@ export function useAdminPhotos() {
     error.value = null
     const { data, error: err } = await supabase
       .from('photos')
-      .select('*, photo_tags(tags(id, name, slug))')
+      .select(PHOTO_SELECT)
       .order('created_at', { ascending: false })
     loading.value = false
 
@@ -22,10 +21,7 @@ export function useAdminPhotos() {
       error.value = err.message
       return
     }
-    photos.value = data.map(({ photo_tags, ...photo }) => ({
-      ...photo,
-      tags: photo_tags.map(pt => pt.tags).filter((t): t is Tag => t !== null),
-    }))
+    photos.value = data.map(toPhotoWithTags)
   }
 
   async function updatePhoto(id: string, patch: TablesUpdate<'photos'>) {
