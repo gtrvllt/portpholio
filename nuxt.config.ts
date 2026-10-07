@@ -24,8 +24,9 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'fr' },
       title: 'Portfolio',
       meta: [
-        { name: 'theme-color', content: '#fafafa', media: '(prefers-color-scheme: light)' },
-        { name: 'theme-color', content: '#0a0a0a', media: '(prefers-color-scheme: dark)' },
+        // Thème clair uniquement, même si le système est en mode sombre.
+        { name: 'color-scheme', content: 'light only' },
+        { name: 'theme-color', content: '#fafafa' },
       ],
     },
   },
