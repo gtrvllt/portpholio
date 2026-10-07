@@ -44,7 +44,13 @@ onMounted(() => {
 
 <template>
   <article class="detail" :class="isPortrait ? 'detail--portrait' : 'detail--landscape'">
-    <div class="detail__media" :style="{ '--ratio': photo.height / photo.width, backgroundImage: background }">
+    <button
+      type="button"
+      class="detail__media"
+      :style="{ '--ratio': photo.height / photo.width, backgroundImage: background }"
+      aria-label="Refermer la photo"
+      @click="emit('close')"
+    >
       <img
         :key="photo.id"
         ref="img"
@@ -60,7 +66,7 @@ onMounted(() => {
         decoding="async"
         @load="loaded = true"
       >
-    </div>
+    </button>
 
     <aside class="detail__info">
       <div class="detail__head">
@@ -111,11 +117,15 @@ onMounted(() => {
 
 /* ---------- Média ---------- */
 .detail__media {
+  display: block;
   height: var(--img-h);
   width: calc(var(--img-h) / var(--ratio));
   max-width: 100%;
+  padding: 0;
+  border: 0;
   overflow: hidden;
   border-radius: 4px;
+  cursor: zoom-out;
   background-color: var(--surface-hover);
   background-size: cover;
   background-position: center;
