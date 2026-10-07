@@ -4,8 +4,7 @@ const route = useRoute()
 const router = useRouter()
 
 const { photos, tags, status, error, refresh } = usePhotos()
-
-useHead({ title: site.name })
+const { photoUrl, closestSize } = usePhotoUrl()
 
 // Filtre actif dans l'URL (?tag=street) : partageable, et le bouton retour fonctionne.
 const activeTag = computed<string | null>({
@@ -14,7 +13,8 @@ const activeTag = computed<string | null>({
     return typeof tag === 'string' && tags.value.some(t => t.slug === tag) ? tag : null
   },
   set: (tag) => {
-    router.replace({ query: { ...route.query, tag: tag ?? undefined } })
+    // Changer de filtre ferme la photo ouverte.
+    router.replace({ query: { ...route.query, tag: tag ?? undefined, photo: undefined } })
   },
 })
 
@@ -23,6 +23,20 @@ const visiblePhotos = computed(() =>
     ? photos.value.filter(p => p.tags.some(t => t.slug === activeTag.value))
     : photos.value,
 )
+
+const viewer = usePhotoViewer(visiblePhotos)
+const activePhoto = viewer.activePhoto
+
+// Lien partagé vers une photo : titre et aperçu (Open Graph) de cette photo.
+useSeoMeta({
+  title: () => activePhoto.value?.title ? `${activePhoto.value.title} · ${site.name}` : site.name,
+  ogTitle: () => activePhoto.value?.title ?? site.name,
+  ogType: 'website',
+  ogImage: () => activePhoto.value
+    ? photoUrl(activePhoto.value.storage_key, closestSize(activePhoto.value.sizes, 1600))
+    : undefined,
+  twitterCard: () => activePhoto.value ? 'summary_large_image' : 'summary',
+})
 </script>
 
 <template>
@@ -45,7 +59,16 @@ const visiblePhotos = computed(() =>
 
       <template v-else>
         <TagFilters v-if="tags.length" v-model="activeTag" :tags="tags" :total="photos.length" class="home__filters" />
-        <PhotoGrid :photos="visiblePhotos" />
+        <PhotoGrid
+          :photos="visiblePhotos"
+          :expanded-id="activePhoto?.id ?? null"
+          :href-for="viewer.hrefFor"
+          @open="viewer.open"
+          @close="viewer.close"
+          @prev="viewer.prev"
+          @next="viewer.next"
+          @tag="activeTag = $event"
+        />
       </template>
     </main>
   </div>
