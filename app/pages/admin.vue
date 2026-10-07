@@ -9,22 +9,20 @@ onMounted(init)
 </script>
 
 <template>
-  <div class="admin">
-    <p v-if="!ready" class="admin__status">Chargement…</p>
-    <AdminLogin v-else-if="!user" />
-    <AdminDashboard v-else />
-  </div>
+  <Transition name="fade" mode="out-in">
+    <div v-if="!ready" key="loading" class="admin-loading">
+      <span class="spinner" aria-label="Chargement" />
+    </div>
+    <AdminLogin v-else-if="!user" key="login" />
+    <AdminDashboard v-else key="dashboard" />
+  </Transition>
 </template>
 
 <style scoped>
-.admin {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 32px 16px;
-  font-family: system-ui, sans-serif;
-}
-
-.admin__status {
-  color: #666;
+.admin-loading {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  color: var(--text-muted);
 }
 </style>

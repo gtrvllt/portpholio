@@ -9,6 +9,7 @@ const initialTags = computed(() => props.photo.tags.map(t => t.name).join(', '))
 const title = ref(props.photo.title ?? '')
 const tagsText = ref(initialTags.value)
 const saving = ref(false)
+const loaded = ref(false)
 const error = ref<string | null>(null)
 
 watch(() => props.photo, (photo) => {
@@ -20,16 +21,16 @@ const dirty = computed(() =>
   title.value.trim() !== (props.photo.title ?? '') || tagsText.value !== initialTags.value,
 )
 
-const thumbUrl = computed(() => photoUrl(props.photo.storage_key, closestSize(props.photo.sizes, 480)))
+const thumbUrl = computed(() => photoUrl(props.photo.storage_key, closestSize(props.photo.sizes, 640)))
 
-const exifLine = computed(() => [
-  props.photo.camera,
-  props.photo.lens,
+const exif = computed(() => [
   formatFocal(props.photo.focal_length),
   formatAperture(props.photo.aperture),
   formatExposure(props.photo.exposure_time),
   formatIso(props.photo.iso),
-].filter(Boolean).join(' · '))
+].filter(Boolean).join('  ·  '))
+
+const gear = computed(() => [props.photo.camera, props.photo.lens].filter(Boolean).join(' — '))
 
 async function run(action: () => Promise<void>) {
   saving.value = true
@@ -70,115 +71,155 @@ function remove() {
 </script>
 
 <template>
-  <li class="item">
-    <img :src="thumbUrl" :alt="photo.title ?? ''" class="item__thumb" loading="lazy">
+  <li class="card" :class="{ 'card--busy': saving }">
+    <div class="card__media" :style="{ aspectRatio: `${photo.width} / ${photo.height}` }">
+      <img
+        :src="thumbUrl"
+        :alt="photo.title ?? ''"
+        class="card__img"
+        :class="{ 'card__img--loaded': loaded }"
+        loading="lazy"
+        @load="loaded = true"
+      >
+      <span class="card__badge mono" :class="{ 'card__badge--published': photo.published }">
+        {{ photo.published ? 'Publiée' : 'Brouillon' }}
+      </span>
+    </div>
 
-    <form class="item__form" @submit.prevent="save">
-      <div class="item__meta">
-        <span class="item__badge" :class="{ 'item__badge--published': photo.published }">
-          {{ photo.published ? 'Publiée' : 'Brouillon' }}
-        </span>
-        <span>{{ photo.width }} × {{ photo.height }}</span>
+    <form class="card__body" @submit.prevent="save">
+      <label class="field">
+        <span class="field__label">Titre</span>
+        <input v-model="title" class="input" type="text" name="title" placeholder="Sans titre">
+      </label>
+      <label class="field">
+        <span class="field__label">Tags</span>
+        <input v-model="tagsText" class="input" type="text" name="tags" placeholder="street, paris">
+      </label>
+
+      <div class="card__exif">
+        <p v-if="gear" class="card__gear">{{ gear }}</p>
+        <p class="mono card__settings">{{ exif || 'Pas de données EXIF' }}</p>
       </div>
 
-      <label>
-        Titre
-        <input v-model="title" type="text" placeholder="Sans titre">
-      </label>
-      <label>
-        Tags (séparés par des virgules)
-        <input v-model="tagsText" type="text" placeholder="street, paris">
-      </label>
+      <Transition name="fade">
+        <p v-if="error" class="card__error" role="alert">{{ error }}</p>
+      </Transition>
 
-      <p class="item__exif">{{ exifLine || 'Pas de données EXIF' }}</p>
-      <p v-if="error" class="item__error" role="alert">{{ error }}</p>
-
-      <div class="item__actions">
-        <button type="submit" :disabled="!dirty || saving">Enregistrer</button>
-        <button type="button" :disabled="saving" @click="togglePublished">
+      <div class="card__actions">
+        <button type="submit" class="btn btn--primary" :disabled="!dirty || saving">Enregistrer</button>
+        <button type="button" class="btn" :disabled="saving" @click="togglePublished">
           {{ photo.published ? 'Dépublier' : 'Publier' }}
         </button>
-        <button type="button" class="item__delete" :disabled="saving" @click="remove">Supprimer</button>
+        <button type="button" class="btn btn--ghost btn--danger card__delete" :disabled="saving" aria-label="Supprimer" @click="remove">
+          <svg viewBox="0 0 16 16" fill="none" width="16" height="16" aria-hidden="true">
+            <path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.5 8.5h6l.5-8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
       </div>
     </form>
   </li>
 </template>
 
 <style scoped>
-.item {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 16px;
-  padding: 16px;
-  border: 1px solid #e5e5e5;
-  border-radius: 8px;
-}
-
-@media (max-width: 560px) {
-  .item {
-    grid-template-columns: 1fr;
-  }
-}
-
-.item__thumb {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 4px;
-  background: #f0f0f0;
-}
-
-.item__form {
+.card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+  transition:
+    box-shadow var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    opacity var(--duration) var(--ease);
 }
 
-.item__form label {
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.card--busy {
+  opacity: 0.6;
+}
+
+.card__media {
+  position: relative;
+  max-height: 320px;
+  width: 100%;
+  background: var(--surface-hover);
+  overflow: hidden;
+}
+
+.card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.02);
+  transition:
+    opacity var(--duration-slow) var(--ease),
+    transform var(--duration-slow) var(--ease);
+}
+
+.card__img--loaded {
+  opacity: 1;
+  transform: none;
+}
+
+.card__badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.card__badge--published {
+  background: var(--success);
+  color: #fff;
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.card__exif {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 14px;
 }
 
-.item__meta {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+.card__gear {
   font-size: 13px;
-  color: #666;
+  font-weight: 500;
 }
 
-.item__badge {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #eee;
+.card__settings {
+  color: var(--text-muted);
+  white-space: pre;
 }
 
-.item__badge--published {
-  background: #e3f2e5;
-  color: #2e7d32;
-}
-
-.item__exif {
-  margin: 0;
+.card__error {
+  color: var(--danger);
   font-size: 13px;
-  color: #666;
 }
 
-.item__error {
-  margin: 0;
-  color: #b00020;
-}
-
-.item__actions {
+.card__actions {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
-.item__delete {
+.card__delete {
   margin-left: auto;
-  color: #b00020;
+  padding: 0 10px;
 }
 </style>
