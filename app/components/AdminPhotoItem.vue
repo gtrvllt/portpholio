@@ -7,6 +7,8 @@ const { photoUrl, closestSize } = usePhotoUrl()
 
 const initialTags = computed(() => props.photo.tags.map(t => t.name).join(', '))
 const title = ref(props.photo.title ?? '')
+const location = ref(props.photo.location ?? '')
+const link = ref(props.photo.link_url ?? '')
 const tagsText = ref(initialTags.value)
 const saving = ref(false)
 const loaded = ref(false)
@@ -14,11 +16,16 @@ const error = ref<string | null>(null)
 
 watch(() => props.photo, (photo) => {
   title.value = photo.title ?? ''
+  location.value = photo.location ?? ''
+  link.value = photo.link_url ?? ''
   tagsText.value = initialTags.value
 })
 
 const dirty = computed(() =>
-  title.value.trim() !== (props.photo.title ?? '') || tagsText.value !== initialTags.value,
+  title.value.trim() !== (props.photo.title ?? '')
+  || location.value.trim() !== (props.photo.location ?? '')
+  || link.value.trim() !== (props.photo.link_url ?? '')
+  || tagsText.value !== initialTags.value,
 )
 
 const thumbUrl = computed(() => photoUrl(props.photo.storage_key, closestSize(props.photo.sizes, 640)))
@@ -48,7 +55,11 @@ async function run(action: () => Promise<void>) {
 
 function save() {
   return run(async () => {
-    await updatePhoto(props.photo.id, { title: title.value.trim() || null })
+    await updatePhoto(props.photo.id, {
+      title: title.value.trim() || null,
+      location: location.value.trim() || null,
+      link_url: normalizeUrl(link.value),
+    })
     await setTags(props.photo.id, tagsText.value.split(','))
     emit('changed')
   })
@@ -90,6 +101,14 @@ function remove() {
       <label class="field">
         <span class="field__label">Titre</span>
         <input v-model="title" class="input" type="text" name="title" placeholder="Sans titre">
+      </label>
+      <label class="field">
+        <span class="field__label">Localisation</span>
+        <input v-model="location" class="input" type="text" name="location" maxlength="120" placeholder="Doëlan, Finistère">
+      </label>
+      <label class="field">
+        <span class="field__label">Lien web</span>
+        <input v-model="link" class="input" type="text" inputmode="url" name="link" maxlength="2048" placeholder="instagram.com/…">
       </label>
       <label class="field">
         <span class="field__label">Tags</span>

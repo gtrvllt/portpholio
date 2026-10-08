@@ -73,7 +73,9 @@ onMounted(() => {
       <div class="detail__head">
         <div class="detail__heading">
           <h2 v-if="photo.title" class="detail__title">{{ photo.title }}</h2>
-          <p v-if="takenAt" class="detail__date">{{ takenAt }}</p>
+          <p v-if="takenAt || photo.location" class="detail__date">
+            {{ [photo.location, takenAt].filter(Boolean).join(' · ') }}
+          </p>
         </div>
         <div class="detail__controls">
           <button type="button" class="detail__control" aria-label="Photo précédente" @click="emit('prev')">
@@ -100,6 +102,17 @@ onMounted(() => {
           <button type="button" class="detail__tag" @click="emit('tag', tag.slug)">#{{ tag.name }}</button>
         </li>
       </ul>
+
+      <a
+        v-if="photo.link_url"
+        :href="photo.link_url"
+        class="detail__link"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ displayHost(photo.link_url) }}
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.5 10.5 10.5 5.5M6 5.5h4.5V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </a>
     </aside>
   </article>
 </template>
@@ -277,5 +290,30 @@ onMounted(() => {
 
 .detail__tag:hover {
   color: var(--text);
+}
+
+.detail__link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--border-strong);
+  font-size: 14px;
+  transition: border-color var(--duration-fast) var(--ease);
+}
+
+.detail__link:hover {
+  border-color: var(--text);
+}
+
+.detail__link svg {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.detail__link:hover svg {
+  transform: translate(1px, -1px);
 }
 </style>
