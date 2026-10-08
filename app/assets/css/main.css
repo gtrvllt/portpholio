@@ -231,6 +231,25 @@ img {
 }
 
 /* =============================================================
+   Écrans tactiles : zones d'appui de 44 px, et champs en 16 px
+   (en dessous, Safari iPhone zoome la page au focus d'un champ).
+   ============================================================= */
+@media (pointer: coarse) {
+  .input {
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .btn {
+    height: 44px;
+  }
+
+  .btn--lg {
+    height: 48px;
+  }
+}
+
+/* =============================================================
    Utilitaires
    ============================================================= */
 .mono {

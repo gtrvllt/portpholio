@@ -123,8 +123,9 @@ onMounted(() => {
   /* Photo en plein écran : toute la hauteur visible, moins une marge en haut et en bas. */
   --edge: 16px;
   --max-h: calc(100dvh - 2 * var(--edge));
-  --info-w: 300px;
-  --space: 32px;
+  /* La colonne d'infos et l'espace s'adaptent à la largeur disponible (téléphone couché, tablette). */
+  --info-w: clamp(220px, 30cqw, 300px);
+  --space: clamp(20px, 3cqw, 32px);
 
   display: grid;
   gap: 20px;
@@ -159,8 +160,8 @@ onMounted(() => {
   --img-h: min(var(--max-h), calc((100cqw - var(--info-w) - var(--space)) * var(--ratio)));
 }
 
-/* Écran étroit : infos sous la photo. */
-@container masonry (width < 720px) {
+/* Écran très étroit (téléphone en portrait) : infos sous la photo. */
+@container masonry (width < 520px) {
   .detail {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -263,8 +264,14 @@ onMounted(() => {
   font-size: 12px;
 }
 
+.detail__spec {
+  min-width: 0;
+}
+
 .detail__spec dd {
   margin: 0;
+  /* Noms d'objectifs longs (ex. « XF16-55mmF2.8 R LM WR ») : retour à la ligne plutôt que débordement. */
+  overflow-wrap: anywhere;
   font-size: 13px;
 }
 
@@ -297,20 +304,44 @@ onMounted(() => {
   align-items: center;
   align-self: flex-start;
   gap: 4px;
-  padding-bottom: 1px;
-  border-bottom: 1px solid var(--border-strong);
   font-size: 14px;
-  transition: border-color var(--duration-fast) var(--ease);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--duration-fast) var(--ease);
 }
 
 .detail__link:hover {
-  border-color: var(--text);
+  text-decoration-color: var(--text);
 }
 
 .detail__link svg {
   width: 14px;
   height: 14px;
   transition: transform var(--duration-fast) var(--ease);
+}
+
+/* Écran tactile : zones d'appui d'au moins 44 px. */
+@media (pointer: coarse) {
+  .detail__control {
+    width: 44px;
+    height: 44px;
+  }
+
+  .detail__controls {
+    margin: -6px -10px 0 auto;
+  }
+
+  .detail__tags {
+    gap: 0 16px;
+  }
+
+  .detail__tag,
+  .detail__link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 .detail__link:hover svg {

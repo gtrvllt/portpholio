@@ -82,8 +82,10 @@ onMounted(fetchPhotos)
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  height: 60px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  min-height: 60px;
+  padding-block: 8px;
 }
 
 .dashboard__brand {

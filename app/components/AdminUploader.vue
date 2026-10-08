@@ -51,8 +51,9 @@ function onChange(event: Event) {
       <svg class="uploader__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
-      <span class="uploader__title">Dépose tes photos ici</span>
-      <span class="uploader__hint">ou clique pour parcourir · JPEG, PNG, WebP</span>
+      <span class="uploader__title">Ajoute tes photos</span>
+      <span class="uploader__hint uploader__hint--mouse">Glisse-les ici ou clique pour parcourir · JPEG, PNG, WebP</span>
+      <span class="uploader__hint uploader__hint--touch">Touche pour parcourir · JPEG, PNG, WebP</span>
     </label>
 
     <Transition name="fade">
@@ -148,6 +149,21 @@ function onChange(event: Event) {
 .uploader__hint {
   color: var(--text-muted);
   font-size: 14px;
+}
+
+/* Pas de glisser-déposer sur un écran tactile : on n'affiche que l'invitation à toucher. */
+.uploader__hint--touch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .uploader__hint--mouse {
+    display: none;
+  }
+
+  .uploader__hint--touch {
+    display: inline;
+  }
 }
 
 .uploader__queue {
