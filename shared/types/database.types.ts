@@ -71,6 +71,8 @@ export type Database = {
           id: string
           iso: number | null
           lens: string | null
+          link_url: string | null
+          location: string | null
           published: boolean
           sizes: number[]
           slug: string
@@ -92,6 +94,8 @@ export type Database = {
           id?: string
           iso?: number | null
           lens?: string | null
+          link_url?: string | null
+          location?: string | null
           published?: boolean
           sizes: number[]
           slug: string
@@ -113,6 +117,8 @@ export type Database = {
           id?: string
           iso?: number | null
           lens?: string | null
+          link_url?: string | null
+          location?: string | null
           published?: boolean
           sizes?: number[]
           slug?: string
