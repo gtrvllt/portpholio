@@ -10,7 +10,10 @@ export default defineNuxtConfig({
   },
   routeRules: {
     // Admin rendue côté client uniquement : la session vit dans le navigateur.
-    '/admin': { ssr: false },
+    // L'en-tête serveur demande aux moteurs de recherche de ne pas l'indexer
+    // (plus fiable qu'une balise <meta> ajoutée côté client).
+    '/admin': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+    '/api/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' } },
   },
   runtimeConfig: {
     public: {
