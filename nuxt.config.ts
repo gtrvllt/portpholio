@@ -15,6 +15,13 @@ export default defineNuxtConfig({
     '/admin': { ssr: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/api/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' } },
   },
+  nitro: {
+    vercel: {
+      // Les fonctions tournent à Dublin, à côté de la base Supabase (eu-west-1, Irlande),
+      // au lieu de Washington (iad1) par défaut : chaque lecture évite l'aller-retour Atlantique.
+      functions: { regions: ['dub1'] },
+    },
+  },
   runtimeConfig: {
     public: {
       // Surchargées par NUXT_PUBLIC_SUPABASE_URL / NUXT_PUBLIC_SUPABASE_KEY
