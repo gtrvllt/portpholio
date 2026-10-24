@@ -7,6 +7,18 @@ const { photoUrl, closestSize, srcset } = usePhotoUrl()
 const isPortrait = computed(() => props.photo.height > props.photo.width)
 const loaded = ref(false)
 const img = ref<HTMLImageElement | null>(null)
+const media = ref<HTMLButtonElement | null>(null)
+
+// Téléphone : glisser vers la gauche → photo suivante, vers la droite → précédente.
+const { shouldIgnoreClick } = useSwipe(media, {
+  onSwipeLeft: () => emit('next'),
+  onSwipeRight: () => emit('prev'),
+})
+
+function onMediaClick() {
+  if (shouldIgnoreClick()) return
+  emit('close')
+}
 
 // Fond : placeholder flou + variante déjà chargée par la grille (en cache), le temps que la grande arrive.
 const background = computed(() => {
@@ -46,11 +58,12 @@ onMounted(() => {
 <template>
   <article class="detail" :class="isPortrait ? 'detail--portrait' : 'detail--landscape'">
     <button
+      ref="media"
       type="button"
       class="detail__media"
       :style="{ '--ratio': photo.height / photo.width, backgroundImage: background }"
       aria-label="Refermer la photo"
-      @click="emit('close')"
+      @click="onMediaClick"
     >
       <img
         :key="photo.id"
@@ -143,6 +156,9 @@ onMounted(() => {
   overflow: hidden;
   border-radius: 4px;
   cursor: zoom-out;
+  /* Le navigateur garde le défilement vertical et le pincement ; le glissement horizontal est à nous (useSwipe). */
+  touch-action: pan-y pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
   background-color: var(--surface-hover);
   background-size: cover;
   background-position: center;
@@ -177,11 +193,19 @@ onMounted(() => {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity var(--duration-slow) var(--ease);
+  /* --swipe-x est posée pendant un glissement : l'image suit le doigt, puis revient si le geste n'est pas validé. */
+  transform: translateX(var(--swipe-x, 0));
+  transition:
+    opacity var(--duration-slow) var(--ease),
+    transform var(--duration) var(--ease);
 }
 
 .detail__img--loaded {
   opacity: 1;
+}
+
+.detail__media[data-swiping] .detail__img {
+  transition: opacity var(--duration-slow) var(--ease);
 }
 
 /* ---------- Infos ---------- */
